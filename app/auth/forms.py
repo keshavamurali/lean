@@ -14,6 +14,18 @@ class LoginForm(Form):
 
 
 class RegistrationForm(Form):
+    firstname = StringField('First Name', validators=[
+        Required(), Length(1, 64), Regexp('^[A-Za-z][A-Za-z]*$', 0,
+                                          'Only letters are allowed  '
+                                          '')])                                    
+    lastname = StringField('Last Name', validators=[
+        Required(), Length(1, 64), Regexp('^[A-Za-z][A-Za-z]*$', 0,
+                                          'Only letters are allowed  '
+                                          '')])
+    rolenum = StringField('Role Number/Student ID', validators=[
+        Required(), Length(1, 64), Regexp('^[A-Za-z][A-Za-z0-9]*$', 0,
+                                          'Usernames must have only letters, '
+                                          'numbers')])
     email = StringField('Email', validators=[Required(), Length(1, 64),
                                            Email()])
     username = StringField('Username', validators=[
