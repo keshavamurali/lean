@@ -295,21 +295,11 @@ class User2(UserMixin, db.Model):
     confirmed = db.Column(db.Boolean, default=False)
     firstname = db.Column(db.String(64))
     lastname = db.Column(db.String(64))
+    roleno = db.Column(db.String(64))
     location = db.Column(db.String(64))
     about_me = db.Column(db.Text())
     member_since = db.Column(db.DateTime(), default=datetime.utcnow)
-    posts = db.relationship('Post', backref='author', lazy='dynamic')
-    followed = db.relationship('Follow',
-                               foreign_keys=[Follow.follower_id],
-                               backref=db.backref('follower', lazy='joined'),
-                               lazy='dynamic',
-                               cascade='all, delete-orphan')
-    followers = db.relationship('Follow',
-                                foreign_keys=[Follow.followed_id],
-                                backref=db.backref('followed', lazy='joined'),
-                                lazy='dynamic',
-                                cascade='all, delete-orphan')
-    comments = db.relationship('Comment', backref='author', lazy='dynamic')
+    #comments = db.relationship('Comment', backref='author', lazy='dynamic')
 
     @staticmethod
     def generate_fake(count=100):
@@ -323,7 +313,7 @@ class User2(UserMixin, db.Model):
                      username=forgery_py.internet.user_name(True),
                      password=forgery_py.lorem_ipsum.word(),
                      confirmed=True,
-                     name=forgery_py.name.full_name(),
+                     firstname=forgery_py.name.full_name(),
                      location=forgery_py.address.city(),
                      about_me=forgery_py.lorem_ipsum.sentence(),
                      member_since=forgery_py.date.date(True))
@@ -335,14 +325,14 @@ class User2(UserMixin, db.Model):
 
     @staticmethod
     def add_self_follows():
-        for user in User.query.all():
+        for user in User2.query.all():
             if not user.is_following(user):
                 user.follow(user)
                 db.session.add(user)
                 db.session.commit()
 
     def __init__(self, **kwargs):
-        super(User, self).__init__(**kwargs)
+        super(User2, self).__init__(**kwargs)
         if self.role is None:
             if self.email == current_app.config['FLASKY_ADMIN']:
                 self.role = Role.query.filter_by(permissions=0xff).first()
@@ -351,7 +341,6 @@ class User2(UserMixin, db.Model):
         if self.email is not None and self.avatar_hash is None:
             self.avatar_hash = hashlib.md5(
                 self.email.encode('utf-8')).hexdigest()
-        self.followed.append(Follow(followed=self))
 
     @property
     def password(self):
@@ -430,49 +419,14 @@ class User2(UserMixin, db.Model):
         self.last_seen = datetime.utcnow()
         db.session.add(self)
 
-    def gravatar(self, size=100, default='identicon', rating='g'):
-        if request.is_secure:
-            url = 'https://secure.gravatar.com/avatar'
-        else:
-            url = 'http://www.gravatar.com/avatar'
-        hash = self.avatar_hash or hashlib.md5(
-            self.email.encode('utf-8')).hexdigest()
-        return '{url}/{hash}?s={size}&d={default}&r={rating}'.format(
-            url=url, hash=hash, size=size, default=default, rating=rating)
 
-    def follow(self, user):
-        if not self.is_following(user):
-            f = Follow(follower=self, followed=user)
-            db.session.add(f)
-
-    def unfollow(self, user):
-        f = self.followed.filter_by(followed_id=user.id).first()
-        if f:
-            db.session.delete(f)
-
-    def is_following(self, user):
-        return self.followed.filter_by(
-            followed_id=user.id).first() is not None
-
-    def is_followed_by(self, user):
-        return self.followers.filter_by(
-            follower_id=user.id).first() is not None
-
-    @property
-    def followed_posts(self):
-        return Post.query.join(Follow, Follow.followed_id == Post.author_id)\
-            .filter(Follow.follower_id == self.id)
 
     def to_json(self):
         json_user = {
             'url': url_for('api.get_user', id=self.id, _external=True),
             'username': self.username,
             'member_since': self.member_since,
-            'last_seen': self.last_seen,
-            'posts': url_for('api.get_user_posts', id=self.id, _external=True),
-            'followed_posts': url_for('api.get_user_followed_posts',
-                                      id=self.id, _external=True),
-            'post_count': self.posts.count()
+            'last_seen': self.last_seen
         }
         return json_user
 
@@ -488,10 +442,10 @@ class User2(UserMixin, db.Model):
             data = s.loads(token)
         except:
             return None
-        return User.query.get(data['id'])
+        return User2.query.get(data['id'])
 
     def __repr__(self):
-        return '<User %r>' % self.username
+        return '<User2 %r>' % self.username
 
 class Post(db.Model):
     __tablename__ = 'posts'
