@@ -24,8 +24,8 @@ class RegistrationForm(Form):
                                           'Only letters are allowed  '
                                           '')])
     rolenum = StringField('Role Number/Student ID', validators=[
-        Required(), Length(1, 64), Regexp('^[A-Za-z][A-Za-z0-9]*$', 0,
-                                          'Usernames must have only letters, '
+        Required(), Length(1, 64), Regexp('[A-Za-z0-9]*$', 0,
+                                          'Role numbers must have only letters, '
                                           'numbers')])
     email = StringField('Email', validators=[Required(), Length(1, 64),
                                            Email()])
