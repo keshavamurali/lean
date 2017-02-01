@@ -24,7 +24,7 @@ class Role(db.Model):
     name = db.Column(db.String(64), unique=True)
     default = db.Column(db.Boolean, default=False, index=True)
     permissions = db.Column(db.Integer)
-    users = db.relationship('User', backref='role', lazy='dynamic')
+    users = db.relationship('User2', backref='role', lazy='dynamic')
 
     @staticmethod
     def insert_roles():
@@ -295,7 +295,7 @@ class User2(UserMixin, db.Model):
     confirmed = db.Column(db.Boolean, default=False)
     firstname = db.Column(db.String(64))
     lastname = db.Column(db.String(64))
-    roleno = db.Column(db.String(64))
+    rolenum = db.Column(db.String(64))
     location = db.Column(db.String(64))
     about_me = db.Column(db.Text())
     member_since = db.Column(db.DateTime(), default=datetime.utcnow)
@@ -338,9 +338,6 @@ class User2(UserMixin, db.Model):
                 self.role = Role.query.filter_by(permissions=0xff).first()
             if self.role is None:
                 self.role = Role.query.filter_by(default=True).first()
-        if self.email is not None and self.avatar_hash is None:
-            self.avatar_hash = hashlib.md5(
-                self.email.encode('utf-8')).hexdigest()
 
     @property
     def password(self):
