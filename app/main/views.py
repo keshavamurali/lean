@@ -35,7 +35,7 @@ def server_shutdown():
 @main.route('/', methods=['GET', 'POST'])
 def index():
     form = PostForm()
-    if current_user.can(Permission.WRITE_ARTICLES) and \
+    if current_user.can(Permission.ADMINISTER) and \
             form.validate_on_submit():
         post = Post(body=form.body.data,
                     author=current_user._get_current_object())
@@ -155,7 +155,7 @@ def edit(id):
 
 @main.route('/follow/<username>')
 @login_required
-@permission_required(Permission.FOLLOW)
+@permission_required(Permission.VIEW_OWN)
 def follow(username):
     user = User.query.filter_by(username=username).first()
     if user is None:
@@ -171,7 +171,7 @@ def follow(username):
 
 @main.route('/unfollow/<username>')
 @login_required
-@permission_required(Permission.FOLLOW)
+@permission_required(Permission.VIEW_OWN)
 def unfollow(username):
     user = User.query.filter_by(username=username).first()
     if user is None:
@@ -237,7 +237,7 @@ def show_followed():
 
 @main.route('/moderate')
 @login_required
-@permission_required(Permission.MODERATE_COMMENTS)
+@permission_required(Permission.ADMINISTER)
 def moderate():
     page = request.args.get('page', 1, type=int)
     pagination = Comment.query.order_by(Comment.timestamp.desc()).paginate(
@@ -250,7 +250,7 @@ def moderate():
 
 @main.route('/moderate/enable/<int:id>')
 @login_required
-@permission_required(Permission.MODERATE_COMMENTS)
+@permission_required(Permission.ADMINISTER)
 def moderate_enable(id):
     comment = Comment.query.get_or_404(id)
     comment.disabled = False
@@ -261,7 +261,7 @@ def moderate_enable(id):
 
 @main.route('/moderate/disable/<int:id>')
 @login_required
-@permission_required(Permission.MODERATE_COMMENTS)
+@permission_required(Permission.ADMINISTER)
 def moderate_disable(id):
     comment = Comment.query.get_or_404(id)
     comment.disabled = True

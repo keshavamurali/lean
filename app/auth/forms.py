@@ -2,7 +2,7 @@ from flask_wtf import Form
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import Required, Length, Email, Regexp, EqualTo
 from wtforms import ValidationError
-from ..models import User
+#from ..models import User
 from ..models import User2
 
 
@@ -23,12 +23,26 @@ class RegistrationForm(Form):
         Required(), Length(1, 64), Regexp('^[A-Za-z][A-Za-z]*$', 0,
                                           'Only letters are allowed  '
                                           '')])
+    
+    fathersname = StringField('Father\'s Name', validators=[
+        Required(), Length(1, 64), Regexp('^[A-Za-z][A-Za-z ]*$', 0,
+                                          'Only letters are allowed  '
+                                          '')])  
+    mothersname = StringField('Mother\'s Name', validators=[
+        Required(), Length(1, 64), Regexp('^[A-Za-z][A-Za-z ]*$', 0,
+                                          'Only letters are allowed  '
+                                          '')])     
     rolenum = StringField('Role Number/Student ID', validators=[
         Required(), Length(1, 64), Regexp('[A-Za-z0-9]*$', 0,
                                           'Role numbers must have only letters, '
                                           'numbers')])
     email = StringField('Email', validators=[Required(), Length(1, 64),
                                            Email()])
+    
+    about = StringField('About yourself', validators=[
+        Required(), Length(1, 128), Regexp('[A-Za-z0-9]*$', 0,
+                                          ''
+                                          '')])   
     username = StringField('Username', validators=[
         Required(), Length(1, 64), Regexp('^[A-Za-z][A-Za-z0-9_.]*$', 0,
                                           'Usernames must have only letters, '
@@ -70,7 +84,7 @@ class PasswordResetForm(Form):
     submit = SubmitField('Reset Password')
 
     def validate_email(self, field):
-        if User.query.filter_by(email=field.data).first() is None:
+        if User2.query.filter_by(email=field.data).first() is None:
             raise ValidationError('Unknown email address.')
 
 
@@ -81,5 +95,5 @@ class ChangeEmailForm(Form):
     submit = SubmitField('Update Email Address')
 
     def validate_email(self, field):
-        if User.query.filter_by(email=field.data).first():
+        if User2.query.filter_by(email=field.data).first():
             raise ValidationError('Email already registered.')

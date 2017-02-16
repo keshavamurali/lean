@@ -3,7 +3,7 @@ from flask_login import login_user, logout_user, login_required, \
     current_user
 from . import auth
 from .. import db
-from ..models import User2
+from ..models import User2, Student
 from ..email import send_email
 from .forms import LoginForm, RegistrationForm, ChangePasswordForm,\
     PasswordResetRequestForm, PasswordResetForm, ChangeEmailForm
@@ -30,9 +30,14 @@ def unconfirmed():
 def login():
     form = LoginForm()
     if form.validate_on_submit():
+        print "validate on submit done"
         user = User2.query.filter_by(email=form.email.data).first()
+        print "user is"
+        print user
         if user is not None and user.verify_password(form.password.data):
             login_user(user, form.remember_me.data)
+            print "login done. current user is"
+            print current_user
             return redirect(request.args.get('next') or url_for('main.index'))
         flash('Invalid username or password.')
     return render_template('auth/login.html', form=form)
@@ -48,16 +53,25 @@ def logout():
 
 @auth.route('/register', methods=['GET', 'POST'])
 def register():
+    print "Method is " + request.method
     form = RegistrationForm()
     if form.validate_on_submit():
+
+        student = Student(firstname=form.firstname.data,
+                    lastname=form.lastname.data,
+                    rolenum=form.rolenum.data,
+                    fathersname=form.fathersname.data,
+                    mothersname=form.mothersname.data,
+                    about_student=form.about.data)
+        
         user = User2(email=form.email.data,
                     username=form.username.data,
-                    password=form.password.data,
-                    firstname=form.firstname.data,
-                    lastname=form.lastname.data,
-                    rolenum=form.rolenum.data)
-        db.session.add(user)
+                    password=form.password.data
+                    )  
+              
+        db.session.add(student)
         db.session.commit()
+        db.session.add(user)
         token = user.generate_confirmation_token()
         send_email(user.email, 'Confirm Your Account',
                    'auth/email/confirm', user=user, token=token)
@@ -69,12 +83,16 @@ def register():
 @auth.route('/confirm/<token>')
 @login_required
 def confirm(token):
+    print "In confirm token"
     if current_user.confirmed:
+        print "user confirmed"
         return redirect(url_for('main.index'))
     if current_user.confirm(token):
+        "user now confirming"
         flash('You have confirmed your account. Thanks!')
     else:
         flash('The confirmation link is invalid or has expired.')
+    print "redirecting"
     return redirect(url_for('main.index'))
 
 
