@@ -64,14 +64,19 @@ def register():
                     mothersname=form.mothersname.data,
                     about_student=form.about.data)
         
-        user = User2(email=form.email.data,
-                    username=form.username.data,
-                    password=form.password.data
-                    )  
-              
         db.session.add(student)
         db.session.commit()
+        
+        student = Student.query.filter_by(rolenum=form.rolenum.data).first()
+
+        user = User2(email=form.email.data,
+                    username=form.username.data,
+                    password=form.password.data,
+                    student_id=student.id)  
+              
+
         db.session.add(user)
+        db.session.commit()
         token = user.generate_confirmation_token()
         send_email(user.email, 'Confirm Your Account',
                    'auth/email/confirm', user=user, token=token)
@@ -83,6 +88,8 @@ def register():
 @auth.route('/confirm/<token>')
 @login_required
 def confirm(token):
+    print "Current user is"
+    print current_user
     print "In confirm token"
     if current_user.confirmed:
         print "user confirmed"
