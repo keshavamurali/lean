@@ -1,5 +1,5 @@
 # lean: Installation procedure
-Learning analytics + Web server experimentation.
+Web server experimentation.
 To use this code, please follow the following steps:<br>
 
 **a.Install Python**
